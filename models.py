@@ -16,4 +16,11 @@ class User(UserMixin, db.Model):
     def check_password(self,pin):
         return check_password_hash(self.password_hash, pin)
 
+class Car(db.Model):
+    id = db.Column(db.Integer,primary_key = True)
+    make = db.Column(db.String(100),nullable = False)
+    model = db.Column(db.String(100), nullable = False)
+    year = db.Column(db.Integer,nullable = False)
+    vin = db.Column(db.String(17), unique =True ,nullable = False)
+    last_service_date = db.Column(db.Date(),nullable = False)
 

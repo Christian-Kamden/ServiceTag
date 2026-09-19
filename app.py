@@ -1,6 +1,6 @@
 from flask import Flask 
 from database import db 
-from models import User
+from models import User,Car
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///cars.db"
