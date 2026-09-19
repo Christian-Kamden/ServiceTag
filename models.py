@@ -10,11 +10,11 @@ class User(UserMixin, db.Model):
     phone_number = db.Column(db.String(20))
     password_hash = db.Column(db.String(200),nullable = False)
 
-    def set_password(self,pin):
-        self.password_hash = generate_password_hash(pin)
+    def set_password(self,password):
+        self.password_hash = generate_password_hash(password)
 
-    def check_password(self,pin):
-        return check_password_hash(self.password_hash, pin)
+    def check_password(self,password):
+        return check_password_hash(self.password_hash, password)
 
 class Car(db.Model):
     id = db.Column(db.Integer,primary_key = True)
@@ -24,3 +24,10 @@ class Car(db.Model):
     vin = db.Column(db.String(17), unique =True ,nullable = False)
     last_service_date = db.Column(db.Date(),nullable = False)
     qr_token = db.Column(db.String(32),unique =True, nullable =False,default = lambda: secrets.token_urlsafe(16))
+    access_code_hash = db.Column(db.String(200), nullable = False)
+
+    def set_access_code(self,access_code):
+        self.access_code_hash = generate_password_hash(access_code)
+
+    def check_access_code(self,access_code):
+        return check_password_hash(self.access_code_hash,access_code)
