@@ -1,7 +1,7 @@
 from flask_login import UserMixin
 from database import db
 from werkzeug.security import generate_password_hash, check_password_hash 
-
+import secrets
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key = True)
@@ -23,4 +23,4 @@ class Car(db.Model):
     year = db.Column(db.Integer,nullable = False)
     vin = db.Column(db.String(17), unique =True ,nullable = False)
     last_service_date = db.Column(db.Date(),nullable = False)
-
+    qr_token = db.Column(db.String(32),unique =True, nullable =False,default = lambda: secrets.token_urlsafe(16))
