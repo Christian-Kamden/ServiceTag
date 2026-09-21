@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, abort 
 from database import db 
 from models import User,Car,ServiceRecord
 
@@ -17,7 +17,12 @@ with app.app_context():
 def home():
     return render_template("home.html")
 
-
+@app.route("/car/<token>")
+def show_qr(token):
+     car = Car.query.filter_by(qr_token = token).first()
+     if car is None:
+        abort(404)
+     return f" {car.owner.name} {car.make} {car.model} {car.year}"
 
 
 if __name__ == "__main__":
