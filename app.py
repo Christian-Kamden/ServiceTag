@@ -22,7 +22,7 @@ def show_qr(token):
      car = Car.query.filter_by(qr_token = token).first()
      if car is None:
         abort(404)
-     return f" {car.owner.name} {car.make} {car.model} {car.year}"
+     return render_template("car.html", car = car )
 
 
 if __name__ == "__main__":
