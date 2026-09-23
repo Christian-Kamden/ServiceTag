@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>sign-up</title>
+</head>
+<body>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+    <div class="alert {{ category }}">{{ message }}</div>
+    {% endfor %}
+    {% endwith %}
+    <form method="POST">
+        <label>Enter Full Name: 
+            <input type="text" name = "name" placeholder="please enter name" required>
+        </label>
+        <label>Enter E-mail Address:
+            <input type="email" name = "email" placeholder = "example@gmail.com" required>
+        </label>
+        <label> Enter Phone Number:
+            <input type="tel" id="phone"  name="phone_number" placeholder = "055 555 5555">
+        </label>
+        <label>Enter Password:
+            <input type="password" name = "password" placeholder = "Please enter a password" minlength="8" required>
+        </label>
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>

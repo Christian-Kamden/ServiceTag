@@ -1,4 +1,4 @@
-from flask import Flask, render_template, abort 
+from flask import Flask, render_template, abort, redirect, url_for,request,flash
 from flask_login import LoginManager
 from database import db 
 import os 
@@ -34,7 +34,37 @@ def show_qr(token):
         abort(404)
      return render_template("car.html", car = car )
 
+@app.route("/signup",methods = ["GET","POST"])
+def sign():
+    if request.method == "POST":
+        name = request.form["name"].strip()
 
+        email = request.form["email"].lower().strip()
+        if User.query.filter_by(email = email).first():
+            flash("This E-mail Is Already Registered","error")
+            return render_template("signup.html")
+        
+
+        phone = request.form.get("phone_number")
+        
+        
+
+        password = request.form["password"]
+        if len(password) < 8:
+            flash("Password must be atleast 8 character","error")
+            return render_template("home")
+        
+        user = User(email = email, name = name, phone_number = phone)
+        user.set_password(password)
+    
+        db.session.add(user)
+        db.session.commit()
+        return redirect(url_for("signup.html"))
+
+    
+    return render_template("/signup.html")
+
+ 
 if __name__ == "__main__":
     app.run(debug = True)
 
