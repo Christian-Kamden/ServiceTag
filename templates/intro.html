@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>welcome page</title>
+</head>
+<body>
+    <h1>introduction page</h1>
+    {% if current_user.is_authenticated %}
+   <a href="{{ url_for('logout') }}">Log out</a> 
+    {% else %}
+   <a href="{{ url_for('login') }}">Log in</a>
+    {% endif %}
+</body>
+</html>

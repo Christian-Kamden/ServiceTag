@@ -14,6 +14,7 @@ db.init_app(app)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
+login_manager.login_view = "login"
 
 with app.app_context():
     db.create_all()
@@ -24,8 +25,8 @@ def loader(user_id):
 
 
 @app.route("/")
-def home():
-    return render_template("home.html")
+def intro():
+    return render_template("intro.html")
 
 @app.route("/car/<token>")
 def show_qr(token):
@@ -49,17 +50,18 @@ def signup():
         password = request.form["password"]
         if len(password) < 8:
             flash("Password must be atleast 8 character","error")
-            return render_template("home")
+            return render_template("signup.html")
         
         user = User(email = email, name = name, phone_number = phone)
         user.set_password(password)
-    
+
+        
         db.session.add(user)
         db.session.commit()
-        return redirect(url_for("home"))
+        login_user(user)
+        return render_template("intro.html")
 
-    
-    return render_template("/home.html")
+    return render_template("signup.html")
 
 
 @app.route("/login", methods = ["GET","POST"])
@@ -74,8 +76,12 @@ def login():
             flash("Email or Password is incorrect, Try again")
             return render_template("login.html")
 
+        db.session.add(user)
+        db.session.commit()
         login_user(user)
-        return redirect(url_for("home"))
+        return redirect(url_for("intro"))
+    
+    return render_template("login.html")
 
 
 
@@ -84,7 +90,7 @@ def login():
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for("home"))
+    return redirect(url_for("introduction"))
 
 
     

@@ -6,11 +6,7 @@
     <title>home</title>
 </head>
 <body>
-    <h1>Welcome</h1>
-    {% if current_user.is_authenticated %}
-   <button><a href="{{ url_for('logout') }}">Log out</a></button> 
-    {% else %}
-    <button><a href="{{ url_for('login') }}">Log in</a></button>
-    {% endif %}
+    <h1>home page</h1>
+
 </body>
 </html>
