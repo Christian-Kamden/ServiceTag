@@ -9,5 +9,27 @@
     <h3>make:{{car.make}}</h3>
     <h3>model:{{car.model}}</h3>
     <h3>year:{{car.year}}</h3>
+{% if is_owner %}
+<h3>Last Service Date:{{car.last_service_date}}</h3>
+<h3>VIN:{{car.vin}}</h3>
+    {% if latest_service_record %}
+        <h3>km:{{latest_service_record.odo_reading}}</h3>
+    {% else %}
+        <h3>km: Not Updated </h3>
+    {% endif %}
+    <h3>vehicle description:{{car.description}}</h3>
+{% else %}
+    {% if car.for_sale%}
+        {% if latest_service_record %}
+            <h3>km:{{latest_service_record.odo_reading}}</h3>
+        {%else%}
+            <h3>km: Not Updated</h3>
+        {% endif %}   
+    <h3>vehicle description:{{car.description}}</h3>
+        {% if car.show_contact %}
+             <h4>contact:{{car.owner.email}}</h4>
+        {% endif %}
+    {% endif %}
+{% endif %}
 </body>
 </html>

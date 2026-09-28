@@ -31,6 +31,9 @@ class Car(db.Model):
     failed_attempts = db.Column(db.Integer, nullable = False, default = 0 )
     locked_until = db.Column(db.DateTime)
     access_code_hash = db.Column(db.String(200), nullable = False)
+    for_sale = db.Column(db.Boolean(), default = False, nullable = False)
+    description = db.Column(db.String(350))
+    show_contact = db.Column(db.Boolean(),default = False, nullable = False)
 
     def set_access_code(self,access_code):
         self.access_code_hash = generate_password_hash(access_code)

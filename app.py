@@ -1,5 +1,5 @@
 from flask import Flask, render_template, abort, redirect, url_for,request,flash
-from flask_login import LoginManager,login_user,logout_user,login_required
+from flask_login import LoginManager,login_user,logout_user,login_required,current_user
 from database import db 
 import os 
 from dotenv import load_dotenv
@@ -21,6 +21,9 @@ with app.app_context():
 
 @login_manager.user_loader
 def loader(user_id):
+    if user_id is None or user_id == "None":
+     return None
+
     return db.session.get(User, int(user_id))
 
 
@@ -31,9 +34,16 @@ def intro():
 @app.route("/car/<token>")
 def show_qr(token):
      car = Car.query.filter_by(qr_token = token).first()
+     latest_service_record = ServiceRecord.query.filter_by(car_id = car.id).order_by(ServiceRecord.visit_date.desc()).first()
      if car is None:
         abort(404)
-     return render_template("car.html", car = car )
+     
+     if current_user.is_authenticated and current_user.id ==car.owner.id:
+        is_owner = True
+     else:
+        is_owner = False
+    
+     return render_template("car.html", car = car, is_owner = is_owner )
 
 @app.route("/signup",methods = ["GET","POST"])
 def signup():
@@ -43,7 +53,7 @@ def signup():
 
         if User.query.filter_by(email = email).first():
             flash("This E-mail Is Already Registered","error")
-            return render_template("signup.html")
+            return redirect(url_for("signup"))
         
         phone = request.form.get("phone_number")
 
@@ -84,18 +94,11 @@ def login():
     return render_template("login.html")
 
 
-
-
 @app.route("/logout")
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for("introduction"))
-
-
-    
-    
-    
+    return redirect(url_for("intro"))
 
 
 
