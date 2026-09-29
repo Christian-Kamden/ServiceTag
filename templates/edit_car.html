@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>edit</title>
+</head>
+<body>
+    <form method="POST">
+        <label>Edit</label>
+        <textarea name="description">{{ car.description }}</textarea>
+        <label>
+            <input type="checkbox" name="for_sale" {% if car.for_sale %}Checked {% endif %}>
+            For Sale
+        </label>
+
+        <label>
+            <input  type="checkbox" name="show_contact {% if car.show_contact %}Checked {% endif %}">
+            Show Contact
+        </label>
+
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>

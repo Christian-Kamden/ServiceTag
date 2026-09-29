@@ -45,32 +45,42 @@ def show_qr(token):
     
      return render_template("car.html", car = car, is_owner = is_owner )
 
+@app.route ("/car/<token>/edit")
+@login_required
+def edit(token):
+    car = Car.query.filter_by(qr_token=token).first()
+    if car is None:
+        abort(404)
+    if car.owner_id != current_user.id:
+        abort(403)
+    if request.method == "POST":
+        car.show_contact = request.form.get("show_contact") == "on"
+        car.for_sale = request.form.get("for_sale") == "on"
+        car.description = request.form["description"]
+        db.session.commit()
+        flash("saved","success")
+        return redirect(url_for("edit", qr_token=token))
+    return render_template("edit_car.html", car=car)
+
 @app.route("/signup",methods = ["GET","POST"])
 def signup():
     if request.method == "POST":
         name = request.form["name"].strip()
         email = request.form["email"].lower().strip()
-
         if User.query.filter_by(email = email).first():
             flash("This E-mail Is Already Registered","error")
             return redirect(url_for("signup"))
-        
         phone = request.form.get("phone_number")
-
         password = request.form["password"]
         if len(password) < 8:
             flash("Password must be atleast 8 character","error")
             return render_template("signup.html")
-        
         user = User(email = email, name = name, phone_number = phone)
         user.set_password(password)
-
-        
         db.session.add(user)
         db.session.commit()
         login_user(user)
         return render_template("intro.html")
-
     return render_template("signup.html")
 
 
@@ -79,18 +89,14 @@ def login():
     if request.method == "POST":
         email = request.form["email"].lower().strip()
         password = request.form["password"]
-
         user = User.query.filter_by(email=email).first()
-
         if user is None or not user.check_password(password):
             flash("Email or Password is incorrect, Try again")
             return render_template("login.html")
-
         db.session.add(user)
         db.session.commit()
         login_user(user)
         return redirect(url_for("intro"))
-    
     return render_template("login.html")
 
 
