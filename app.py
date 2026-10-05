@@ -4,6 +4,7 @@ from database import db
 import os 
 from dotenv import load_dotenv
 from models import User,Car,ServiceRecord
+from datetime import datetime
 
 
 app = Flask(__name__)
@@ -38,7 +39,7 @@ def show_qr(token):
      if car is None:
         abort(404)
      
-     if current_user.is_authenticated and current_user.id ==car.owner.id:
+     if current_user.is_authenticated and current_user.id == car.owner.id:
         is_owner = True
      else:
         is_owner = False
@@ -98,6 +99,29 @@ def login():
         login_user(user)
         return redirect(url_for("intro"))
     return render_template("login.html")
+
+
+@app.route("/register_car", methods = ["GET","POST"])
+@login_required
+def reg():
+    if request.method == "POST":
+        make = request.form["make"]
+        model = request.form["model"]
+        year = (int(request.form["year"]))
+        last_service_date = request.form["last_service_date"]
+        last_service_date = datetime.strptime(last_service_date,"%Y-%m-%d").date()
+        vin = request.form["vin"]
+        access_code = request.form["access_code"]
+        if Car.query.filter_by(vin=vin).first():
+            flash("This VIN number already exsists","error")
+            return render_template("register_car.html")
+        car = Car(owner_id=current_user.id, make=make, model=model, year=year, vin=vin, last_service_date=last_service_date)
+        car.set_access_code(access_code)
+        db.session.add(car)
+        db.session.commit()
+        return redirect(url_for("show_qr", token=car.qr_token))
+    return render_template("register_car.html")
+
 
 
 @app.route("/logout")
