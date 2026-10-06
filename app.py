@@ -46,7 +46,7 @@ def show_qr(token):
     
      return render_template("car.html", car = car, is_owner = is_owner )
 
-@app.route ("/car/<token>/edit")
+@app.route ("/car/<token>/edit", methods = ["GET","POST"])
 @login_required
 def edit(token):
     car = Car.query.filter_by(qr_token=token).first()
@@ -60,7 +60,7 @@ def edit(token):
         car.description = request.form["description"]
         db.session.commit()
         flash("saved","success")
-        return redirect(url_for("edit", qr_token=token))
+        return redirect(url_for("edit", token=token))
     return render_template("edit_car.html", car=car)
 
 @app.route("/signup",methods = ["GET","POST"])
@@ -75,13 +75,13 @@ def signup():
         password = request.form["password"]
         if len(password) < 8:
             flash("Password must be atleast 8 character","error")
-            return render_template("signup.html")
+            return redirect(url_for("signup"))
         user = User(email = email, name = name, phone_number = phone)
         user.set_password(password)
         db.session.add(user)
         db.session.commit()
         login_user(user)
-        return render_template("intro.html")
+        return redirect(url_for("intro"))
     return render_template("signup.html")
 
 
