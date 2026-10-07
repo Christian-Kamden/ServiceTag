@@ -55,12 +55,12 @@ def edit(token):
     if car.owner_id != current_user.id:
         abort(403)
     if request.method == "POST":
-        car.show_contact = request.form.get("show_contact") == "on"
-        car.for_sale = request.form.get("for_sale") == "on"
+        car.show_contact = "show_contact" in request.form
+        car.for_sale =  "for_sale" in request.form
         car.description = request.form["description"]
         db.session.commit()
         flash("saved","success")
-        return redirect(url_for("edit", token=token))
+        return redirect(url_for("show_qr", token=token))
     return render_template("edit_car.html", car=car)
 
 @app.route("/signup",methods = ["GET","POST"])
@@ -122,7 +122,10 @@ def reg():
         return redirect(url_for("show_qr", token=car.qr_token))
     return render_template("register_car.html")
 
-
+@app.route("/my_cars")
+@login_required
+def my_cars():
+    return render_template("my_cars.html", cars=current_user.cars)
 
 @app.route("/logout")
 @login_required
