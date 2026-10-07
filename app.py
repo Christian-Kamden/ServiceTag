@@ -1,11 +1,12 @@
-from flask import Flask, render_template, abort, redirect, url_for,request,flash
+from flask import Flask, render_template, abort, redirect, url_for,request,flash,Response
 from flask_login import LoginManager,login_user,logout_user,login_required,current_user
 from database import db 
 import os 
 from dotenv import load_dotenv
 from models import User,Car,ServiceRecord
 from datetime import datetime
-
+import qrcode
+import io
 
 app = Flask(__name__)
 load_dotenv()
@@ -62,6 +63,21 @@ def edit(token):
         flash("saved","success")
         return redirect(url_for("show_qr", token=token))
     return render_template("edit_car.html", car=car)
+
+
+@app.route("/car/<token>/qr", methods = ["GET"])
+def generate_qr(token):
+    car = Car.query.filter_by(qr_token=token).first()
+    if car is None:
+        abort(404)
+    else:
+        qr_url = f"{request.host_url}car/{token}"
+        img = qrcode.make(qr_url)
+        buffer = io.BytesIO()
+        img.save(buffer, format="PNG")
+        buffer.seek(0)
+        return Response(buffer.getvalue(), mimetype="image/png")
+        
 
 @app.route("/signup",methods = ["GET","POST"])
 def signup():
