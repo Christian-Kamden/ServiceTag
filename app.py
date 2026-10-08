@@ -1,4 +1,4 @@
-from flask import Flask, render_template, abort, redirect, url_for,request,flash,Response
+from flask import Flask, render_template, abort, redirect, url_for,request,flash,Response,session
 from flask_login import LoginManager,login_user,logout_user,login_required,current_user
 from database import db 
 import os 
@@ -33,19 +33,34 @@ def loader(user_id):
 def intro():
     return render_template("intro.html")
 
-@app.route("/car/<token>")
+@app.route("/car/<token>", methods = ["GET","POST"])
 def show_qr(token):
-     car = Car.query.filter_by(qr_token = token).first()
-     latest_service_record = ServiceRecord.query.filter_by(car_id = car.id).order_by(ServiceRecord.visit_date.desc()).first()
-     if car is None:
+    car = Car.query.filter_by(qr_token = token).first()
+    if car is None:
         abort(404)
-     
-     if current_user.is_authenticated and current_user.id == car.owner.id:
+    latest_service_record = ServiceRecord.query.filter_by(car_id = car.id).order_by(ServiceRecord.visit_date.desc()).first()
+    if current_user.is_authenticated and current_user.id == car.owner.id:
         is_owner = True
-     else:
+    else:
         is_owner = False
+    mechanic_unlocked = car.id in session.get("unlocked_cars",[])
+    if request.method == "POST":
+        submitted_code = request.form["access_code"]
+        if car.check_access_code(submitted_code):
+            session.setdefault("unlocked_cars",[])
+            if car.id not in session["unlocked_cars"]:
+                session["unlocked_cars"].append(car.id)
+                session.modified = True
+            mechanic_unlocked = True
+        else:
+            flash("Incorrect Access Code","error")
+            mechanic_unlocked = False
+    return render_template("car.html", 
+                        car = car, 
+                        is_owner = is_owner, 
+                        latest_service_record=latest_service_record,
+                        mechanic_unlocked=mechanic_unlocked)
     
-     return render_template("car.html", car = car, is_owner = is_owner )
 
 @app.route ("/car/<token>/edit", methods = ["GET","POST"])
 @login_required
@@ -131,7 +146,13 @@ def reg():
         if Car.query.filter_by(vin=vin).first():
             flash("This VIN number already exsists","error")
             return render_template("register_car.html")
-        car = Car(owner_id=current_user.id, make=make, model=model, year=year, vin=vin, last_service_date=last_service_date)
+        car = Car(owner_id=current_user.id, 
+                  make=make, 
+                  model=model, 
+                  year=year, 
+                  vin=vin, 
+                  last_service_date=last_service_date)
+        
         car.set_access_code(access_code)
         db.session.add(car)
         db.session.commit()

@@ -6,34 +6,62 @@
     <title>car</title>
 </head>
 <body>
-    <h3>make:{{car.make}}</h3>
-    <h3>model:{{car.model}}</h3>
-    <h3>year:{{car.year}}</h3>
-{% if is_owner %}
-    <h3>Last Service Date:{{car.last_service_date}}</h3>
-    <h3>VIN:{{car.vin}}</h3>
-        {% if latest_service_record %}
-            <h3>km:{{latest_service_record.odo_reading}}</h3>
-        {% else %}
-            <h3>km: Not Updated </h3>
+    {% with messages = get_flashed_messages(with_categories = True)%}
+        {% if messages%}
+            {%for category, message in messages%}
+                <p><strong>{{category|title}}:</strong>{{message}}</p>
+            {% endfor %}
         {% endif %}
-            <h3>vehicle description:{{car.description}}</h3>
-    <img src="{{url_for('generate_qr', token=car.qr_token)}}" download>
-    <a href="{{url_for('generate_qr', token=car.qr_token)}}" download>Download QR image</a>
-    <a href="{{ url_for('edit', token=car.qr_token) }}">edit</a>
+    {% endwith %}
+
+    <h2>vehicle Profile</h2>
+    <p>{{car.make}} </p>
+    <p>{{car.model}}</p>
+    <p>{{car.year}}</p>
+
+{% if is_owner or mechanic_unlocked %}
+    <h3>Owner and Mechanic Dashboard</h3>
+    <p>Last Service Date:{{car.last_service_date}}</p>
+    <p>VIN:{{car.vin}}</p>
+    {% if latest_service_record %}
+        <p>km:{{latest_service_record.odo_reading}}</p>
+    {% else %}
+        <p>km: Not Updated </p>
+    {% endif %}
+        <h3>vehicle description:{{car.description}}</h3>
+    {% if is_owner %}
+        <hr>
+        <h4>Owner Controls</h4>
+        <img src="{{url_for('generate_qr', token=car.qr_token)}}" download>
+        <br>
+        <a href="{{url_for('generate_qr', token=car.qr_token)}}" download>Download image</a>
+        <br>
+        <a href="{{ url_for('edit', token=car.qr_token) }}">edit</a>
+    {% endif %}
 {% else %}
+    <fieldset>
+        <legend>Mechanic Access</legend>
+        <form method = "POST">
+            <label for="access_code">Enter access code PIN:</label>
+            <input type="password" name="access_code" id="access_code" required>
+            <button type="submit">Submit</button>
+        </form>
+    </fieldset>
     {% if car.for_sale%}
         {% if latest_service_record %}
-            <h3>km:{{latest_service_record.odo_reading}}</h3>
+            <p>km:{{latest_service_record.odo_reading}}</p>
         {%else%}
-            <h3>km: Not Updated</h3>
+            <p>km: Not Updated</p>
         {% endif %}   
-            <h3>vehicle description:{{car.description}}</h3>
+
+            <h4>vehicle description:{{car.description}}</h4>
+
         {% if car.show_contact %}
              <h4>contact:{{car.owner.email}}</h4>
         {% else %}
              <h4>contact: Not Available</h4>
         {% endif %}
+
     {% endif %}
 {% endif %}
 </body>
