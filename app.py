@@ -171,9 +171,7 @@ def login():
         user = User.query.filter_by(email=email).first()
         if user is None or not user.check_password(password):
             flash("Email or Password is incorrect, Try again")
-            return render_template("login.html")
-        db.session.add(user)
-        db.session.commit()
+            return redirect(url_for("login"))
         login_user(user)
         return redirect(url_for("intro"))
     return render_template("login.html")
