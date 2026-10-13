@@ -20,7 +20,7 @@ class User(UserMixin, db.Model):
 
 class Car(db.Model):
     id = db.Column(db.Integer,primary_key = True)
-    records = db.relationship("ServiceRecord", backref = "car")
+    records = db.relationship("ServiceRecord", backref = "car", cascade="all, delete-orphan")
     owner_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable = False)
     make = db.Column(db.String(100), nullable = False)
     model = db.Column(db.String(100), nullable = False)

@@ -8,18 +8,22 @@ from datetime import datetime,timedelta
 import qrcode
 import io
 
+
 app = Flask(__name__)
 load_dotenv()
 app.config["SECRET_KEY"] = os.environ["SECRET_KEY"]
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///cars.db"
 db.init_app(app)
 
+
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "login"
 
+
 with app.app_context():
     db.create_all()
+
 
 @login_manager.user_loader
 def loader(user_id):
@@ -31,7 +35,12 @@ def loader(user_id):
 
 @app.route("/")
 def intro():
-    return render_template("intro.html")
+    has_cars = False
+    if current_user.is_authenticated:
+        exists = Car.query.filter_by(owner_id=current_user.id).first()
+        has_cars = exists is not None
+    return render_template("intro.html", has_cars=has_cars)
+
 
 @app.route("/car/<token>", methods=["GET","POST"])
 def show_qr(token):
@@ -97,6 +106,7 @@ def edit(token):
         return redirect(url_for("show_qr", token=token))
     return render_template("edit_car.html", car=car)
 
+
 @app.route("/car/<token>/add_record", methods= ["GET", "POST"])
 def add_record(token):
     car = Car.query.filter_by(qr_token=token).first()
@@ -124,8 +134,26 @@ def add_record(token):
         return redirect(url_for("show_qr", token=token))
     return render_template("add_record.html", car=car)
 
+@app.route("/car/<token>/delete" ,methods=["POST","GET"])
+@login_required
+def delete(token):
+    car = Car.query.filter_by(qr_token=token).first()
+    if car is None:
+        abort(404)
+    if car.owner_id != current_user.id:
+        abort(403)
 
-
+    if request.method == "POST":
+        db.session.delete(car)
+        db.session.commit()
+        flash("Car deleted","success")
+        remaining_car = Car.query.filter_by(owner_id=current_user.id).first()
+        if remaining_car is None:
+            return redirect(url_for("intro"))
+        else:
+            return redirect(url_for("my_cars"))
+    return render_template("delete_car.html", car=car)
+    
 
 @app.route("/car/<token>/qr", methods = ["GET"])
 def generate_qr(token):
@@ -177,6 +205,13 @@ def login():
     return render_template("login.html")
 
 
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for("intro"))
+
+
 @app.route("/register_car", methods = ["GET","POST"])
 @login_required
 def reg():
@@ -207,14 +242,8 @@ def reg():
 @app.route("/my_cars")
 @login_required
 def my_cars():
-    return render_template("my_cars.html", cars=current_user.cars)
-
-@app.route("/logout")
-@login_required
-def logout():
-    logout_user()
-    return redirect(url_for("intro"))
-
+    user_cars = Car.query.filter_by(owner_id=current_user.id).all()
+    return render_template("my_cars.html", cars=user_cars)
 
 
 if __name__ == "__main__":
