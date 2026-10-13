@@ -10,15 +10,18 @@
         <label>Edit</label>
         <textarea name="description">{{ car.description }}</textarea>
         <label>
-            <input type="checkbox" name="for_sale" {% if car.for_sale %}Checked {% endif %}>
+            <input type="checkbox" name="for_sale" {% if car.for_sale %} checked {% endif %}>
             For Sale
         </label>
 
         <label>
-            <input  type="checkbox" name="show_contact" {% if car.show_contact %}Checked {% endif %}>
+            <input  type="checkbox" name="show_contact" {% if car.show_contact %} checked {% endif %}>
             Show Contact
         </label>
-
+        <label>
+            <input type="checkbox" name="mechanic_full_access"{% if car.mechanic_full_access %} checked {% endif %}>
+            Allow mechanics to see full service details
+        </label>
         <button type="submit">Submit</button>
     </form>
 </body>

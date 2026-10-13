@@ -34,6 +34,7 @@ class Car(db.Model):
     for_sale = db.Column(db.Boolean(), default = False, nullable = False)
     description = db.Column(db.String(350))
     show_contact = db.Column(db.Boolean(),default = False, nullable = False)
+    mechanic_full_access = db.Column(db.Boolean(),default = False, nullable = False)
 
     def set_access_code(self,access_code):
         self.access_code_hash = generate_password_hash(access_code)

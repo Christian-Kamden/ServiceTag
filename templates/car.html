@@ -19,8 +19,8 @@
     <p>{{car.model}}</p>
     <p>{{car.year}}</p>
 
-{% if is_owner or mechanic_unlocked %}
-    <h3>Owner and Mechanic Dashboard</h3>
+{% if is_owner %}
+    <h3> Dashboard</h3>
     <p>Last Service Date:{{car.last_service_date}}</p>
     <p>VIN:{{car.vin}}</p>
     {% if latest_service_record %}
@@ -28,16 +28,26 @@
     {% else %}
         <p>km: Not Updated </p>
     {% endif %}
-        <h3>vehicle description:{{car.description}}</h3>
-    {% if is_owner %}
-        <hr>
-        <h4>Owner Controls</h4>
-        <img src="{{url_for('generate_qr', token=car.qr_token)}}" download>
-        <br>
-        <a href="{{url_for('generate_qr', token=car.qr_token)}}" download>Download image</a>
-        <br>
-        <a href="{{ url_for('edit', token=car.qr_token) }}">edit</a>
-    {% endif %}
+    <h3>vehicle description:</h3>
+    <p>{{car.description}}</p>
+    <hr>
+    <h4> Controls</h4>
+    <img src="{{url_for('generate_qr', token=car.qr_token)}}" download>
+    <br>
+    <a href="{{url_for('generate_qr', token=car.qr_token)}}" download>Download image</a>
+    <br>
+    <a href="{{ url_for('edit', token=car.qr_token) }}">edit</a>
+{% elif mechanic_unlocked%}
+        {% for record in service_history %}
+            <p>{{record.visit_date}}</p>
+            <p>{{record.description}}</p>
+                {% if car.mechanic_full_access%}
+                    <p>odometer reading: {{record.odo_reading}} </p>
+                    <p>Shop: {{record.store}}</p>
+                {% endif %}
+        {% else %}
+            <p>No Service History Record</p>
+        {% endfor %}
 {% else %}
     <fieldset>
         <legend>Mechanic Access</legend>

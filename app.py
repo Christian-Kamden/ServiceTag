@@ -4,7 +4,7 @@ from database import db
 import os 
 from dotenv import load_dotenv
 from models import User,Car,ServiceRecord
-from datetime import datetime
+from datetime import datetime,timedelta
 import qrcode
 import io
 
@@ -33,34 +33,51 @@ def loader(user_id):
 def intro():
     return render_template("intro.html")
 
-@app.route("/car/<token>", methods = ["GET","POST"])
+@app.route("/car/<token>", methods=["GET","POST"])
 def show_qr(token):
-    car = Car.query.filter_by(qr_token = token).first()
+    car = Car.query.filter_by(qr_token=token).first()
     if car is None:
         abort(404)
-    latest_service_record = ServiceRecord.query.filter_by(car_id = car.id).order_by(ServiceRecord.visit_date.desc()).first()
-    if current_user.is_authenticated and current_user.id == car.owner.id:
-        is_owner = True
+    latest_service_record = ServiceRecord.query.filter_by(car_id=car.id).order_by(ServiceRecord.visit_date.desc()).first()
+    service_history = ServiceRecord.query.filter_by(car_id=car.id).order_by(ServiceRecord.visit_date.desc()).all()
+
+    is_owner = current_user.is_authenticated and current_user.id == car.owner.id
+
+    if car.locked_until and car.locked_until > datetime.now():
+        flash("This car is temporarily locked due to too many incorrect attempts","Error")
+        mechanic_unlocked = False
     else:
-        is_owner = False
-    mechanic_unlocked = car.id in session.get("unlocked_cars",[])
-    if request.method == "POST":
-        submitted_code = request.form["access_code"]
-        if car.check_access_code(submitted_code):
-            session.setdefault("unlocked_cars",[])
-            if car.id not in session["unlocked_cars"]:
-                session["unlocked_cars"].append(car.id)
-                session.modified = True
-            mechanic_unlocked = True
-        else:
-            flash("Incorrect Access Code","error")
-            mechanic_unlocked = False
-    return render_template("car.html", 
-                        car = car, 
-                        is_owner = is_owner, 
-                        latest_service_record=latest_service_record,
-                        mechanic_unlocked=mechanic_unlocked)
-    
+        unlocked_cars = session.get("unlocked_cars",[])
+        mechanic_unlocked = car.id in unlocked_cars
+        if request.method == "POST":
+            submitted_code = request.form.get("access_code")
+
+            if car.check_access_code(submitted_code):
+                if car.id  not in unlocked_cars:
+                    unlocked_cars.append(car.id)
+                    session["unlocked_cars"] = unlocked_cars
+                mechanic_unlocked = True
+                car.failed_attempts = 0
+                db.session.add(car)
+                db.session.commit()
+            else:
+                car.failed_attempts += 1
+                if car.failed_attempts >= 3:
+                    car.locked_until = datetime.now() + timedelta(minutes=5)
+                    flash("Too many failed attempts. Please try again later","Error")
+                else:
+                    flash("Incorrect Access Code", "error")
+
+                db.session.add(car)
+                db.session.commit()
+            return redirect(url_for("show_qr",token=token))
+    return render_template("car.html",
+                            car=car,
+                            is_owner=is_owner,
+                            latest_service_record=latest_service_record,
+                            service_history=service_history,
+                            mechanic_unlocked=mechanic_unlocked)
+
 
 @app.route ("/car/<token>/edit", methods = ["GET","POST"])
 @login_required
@@ -73,11 +90,41 @@ def edit(token):
     if request.method == "POST":
         car.show_contact = "show_contact" in request.form
         car.for_sale =  "for_sale" in request.form
+        car.mechanic_full_access = "mechanic_full_access" in request.form
         car.description = request.form["description"]
         db.session.commit()
         flash("saved","success")
         return redirect(url_for("show_qr", token=token))
     return render_template("edit_car.html", car=car)
+
+@app.route("/car/<token>/add_record", methods= ["GET", "POST"])
+def add_record(token):
+    car = Car.query.filter_by(qr_token=token).first()
+    if car is None:
+        abort(404)
+    is_owner = current_user.is_authenticated and current_user.id == car.owner.id
+    mechanic_access = car.id in session.get("unlocked_cars",[])
+    if not is_owner and not mechanic_access:
+        abort(403)
+    if request.method == "POST":
+        mechanic = request.form["mechanic"]
+        description = request.form.get("description")
+        odo_reading = int(request.form["odo_reading"])
+        visit_date = datetime.strptime(request.form["visit_date"], "%Y-%m-%d").date()
+        store = request.form["store"]
+        record = ServiceRecord(car_id=car.id,
+                               mechanic=mechanic,
+                               description=description,
+                               odo_reading=odo_reading,
+                               visit_date=visit_date,
+                               store=store)
+        db.session.add(record)
+        db.session.commit()
+        flash("service Record Added","success")
+        return redirect(url_for("show_qr", token=token))
+    return render_template("add_record.html", car=car)
+
+
 
 
 @app.route("/car/<token>/qr", methods = ["GET"])
