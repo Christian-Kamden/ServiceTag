@@ -35,11 +35,16 @@ def loader(user_id):
 
 @app.route("/")
 def intro():
-    has_cars = False
+    return render_template("intro.html")
+
+
+@app.context_processor
+def inject_has_cars():
     if current_user.is_authenticated:
-        exists = Car.query.filter_by(owner_id=current_user.id).first()
-        has_cars = exists is not None
-    return render_template("intro.html", has_cars=has_cars)
+        has_cars = Car.query.filter_by(owner_id=current_user.id).first() is not None
+    else:
+        has_cars = False
+    return dict(has_cars=has_cars)
 
 
 @app.route("/car/<token>", methods=["GET","POST"])

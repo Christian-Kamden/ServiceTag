@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %} Base {% endblock %}</title>
+</head>
+<body>
+    {% with messages = get_flashed_messages(with_categories = True)%}
+        {% if messages%}
+            {%for category, message in messages%}
+                <p><strong>{{category|title}}:</strong>{{message}}</p>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    <nav>
+        <div>MySite</div>
+        <button aria-label="toggle naviagtion">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+
+        <ul>
+            <li><a href="{{url_for('intro')}}">Home</a></li>
+            {% if current_user.is_authenticated %}
+                <li><a href="{{url_for('reg')}}">Register Car</a></li>
+            {% endif %}
+            {% if has_cars %}
+                <li><a href="{{url_for('my_cars')}}">My Cars</a></li>
+            {% endif %}
+            {% if current_user.is_authenticated %}
+                <li><a href="{{url_for('logout')}}">Log Out</a></li>
+            {% else %}
+                <li><a href="{{url_for('signup')}}">Sign Up</a></li>
+                <li><a href="{{url_for('login')}}">Log In</a></li>
+            {% endif %}
+
+        </ul>
+    </nav>
+    {% block content %} {% endblock %}
+</body>
+</html>

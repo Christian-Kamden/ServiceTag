@@ -1,28 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>welcome page</title>
-</head>
-<body>
-    <section id="log">
-        <h1>introduction page</h1>
-        {% if current_user.is_authenticated %}
-            <button><a href="{{ url_for('logout') }}">Log out</a></button>
-        {% else %}
-            <button><a href="{{ url_for('login') }}">Log in</a></button>
-        {% endif %}
-    </section>
-    {% if has_cars %}
-        <section id="my_cars">
-            <button><a href="{{url_for('my_cars')}}">My Cars</a></button>
-        </section>
-    {% endif %}
-    <section id="register">
-        {% if current_user.is_authenticated %}
-        <button><a href="{{url_for('reg')}}">Register Car</a></button>
-        {% endif %}
-    </section>
-</body>
-</html>
+    {% extends "base.html" %}
+    {% block title %} Welcome {% endblock %}
+    {% block content %}
+    <h1> Introduction page</h1>
+    {% endblock %}
