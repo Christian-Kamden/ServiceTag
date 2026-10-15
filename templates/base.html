@@ -15,13 +15,13 @@
     {% endwith %}
     <nav>
         <div>ServiceTag</div>
-        <button aria-label="toggle naviagtion">
-            <span></span>
+        <button id="burger-btn" aria-label="toggle naviagtion">
+            <span>☰ Menu</span>
             <span></span>
             <span></span>
         </button>
 
-        <ul>
+        <ul id="nav-menu">
             {% if request.endpoint != "intro" %}
                 <li><a href="{{url_for('intro')}}">Home</a></li>
             {% endif %}
@@ -47,5 +47,6 @@
         </ul>
     </nav>
     {% block content %} {% endblock %}
+   <script src =" {{url_for('static', filename='main.js')}}"></script>
 </body>
 </html>

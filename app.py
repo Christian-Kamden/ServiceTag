@@ -58,9 +58,13 @@ def show_qr(token):
     is_owner = current_user.is_authenticated and current_user.id == car.owner.id
 
     if car.locked_until and car.locked_until > datetime.now():
-        flash("This car is temporarily locked due to too many incorrect attempts","Error")
         mechanic_unlocked = False
     else:
+        if car.locked_until is not None:
+            car.failed_attempts = 0
+            car.locked_until = None
+            db.session.commit()
+
         unlocked_cars = session.get("unlocked_cars",[])
         mechanic_unlocked = car.id in unlocked_cars
         if request.method == "POST":
