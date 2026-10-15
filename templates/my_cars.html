@@ -1,18 +1,16 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>my_cars</title>
-</head>
-<body>
-    <p> 
-        {% for car in cars %}
-        <li>
-            <a href = "{{url_for('show_qr', token=car.qr_token)}}">{{car.make}} {{car.model}} {{car.year}}</a>
-             <button><a href = "{{url_for('delete',token=car.qr_token)}}">Delete</a></button>
-        </li>
-        {% endfor %}
-    </p>
-</body>
-</html>
+
+    {% extends "base.html" %}
+    {% block title %} My Cars {% endblock %}
+    {% block content %}
+        <ul>
+            {% for car in cars %}
+            <li>
+                <a href = "{{url_for('show_qr', token=car.qr_token)}}">{{car.make}} {{car.model}} {{car.year}}</a>
+                <a href = "{{url_for('delete',token=car.qr_token)}}">Delete</a>
+            </li>
+            {% else %}
+                <li>No Car Available</li>
+            {% endfor %}
+        </ul>
+    {% endblock %}
+ 

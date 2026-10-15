@@ -14,7 +14,7 @@
         {% endif %}
     {% endwith %}
     <nav>
-        <div>MySite</div>
+        <div>ServiceTag</div>
         <button aria-label="toggle naviagtion">
             <span></span>
             <span></span>
@@ -22,18 +22,26 @@
         </button>
 
         <ul>
-            <li><a href="{{url_for('intro')}}">Home</a></li>
-            {% if current_user.is_authenticated %}
+            {% if request.endpoint != "intro" %}
+                <li><a href="{{url_for('intro')}}">Home</a></li>
+            {% endif %}
+            {% if current_user.is_authenticated and request.endpoint != "reg" %}
                 <li><a href="{{url_for('reg')}}">Register Car</a></li>
             {% endif %}
-            {% if has_cars %}
+            {% if has_cars and request.endpoint != "my_cars" %}
                 <li><a href="{{url_for('my_cars')}}">My Cars</a></li>
             {% endif %}
             {% if current_user.is_authenticated %}
-                <li><a href="{{url_for('logout')}}">Log Out</a></li>
+                {% if request.endpoint != "logout" %}
+                    <li><a href="{{url_for('logout')}}">Log Out</a></li>
+                {% endif %}
             {% else %}
-                <li><a href="{{url_for('signup')}}">Sign Up</a></li>
-                <li><a href="{{url_for('login')}}">Log In</a></li>
+                {% if request.endpoint != "signup" %}
+                    <li><a href="{{url_for('signup')}}">Sign Up</a></li>
+                {% endif %}
+                {% if request.endpoint != "login" %}
+                    <li><a href="{{url_for('login')}}">Log In</a></li>
+                {% endif %}
             {% endif %}
 
         </ul>

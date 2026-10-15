@@ -1,28 +1,23 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>edit</title>
-</head>
-<body>
-    <form method="POST">
-        <label>Edit</label>
-        <textarea name="description">{{ car.description }}</textarea>
-        <label>
-            <input type="checkbox" name="for_sale" {% if car.for_sale %} checked {% endif %}>
-            For Sale
-        </label>
+{% extends "base.html" %}
+    {% block title %} Car Details {% endblock %}
+        {% block content %}
+        <form method="POST">
+            <h1>Edit Car Information</h1>
+            <label>Edit</label>
+            <textarea name="description">{{ car.description }}</textarea>
+            <label>
+                <input type="checkbox" name="for_sale" {% if car.for_sale %} checked {% endif %}>
+                For Sale
+            </label>
 
-        <label>
-            <input  type="checkbox" name="show_contact" {% if car.show_contact %} checked {% endif %}>
-            Show Contact
-        </label>
-        <label>
-            <input type="checkbox" name="mechanic_full_access"{% if car.mechanic_full_access %} checked {% endif %}>
-            Allow mechanics to see full service details
-        </label>
-        <button type="submit">Submit</button>
-    </form>
-</body>
-</html>
+            <label>
+                <input  type="checkbox" name="show_contact" {% if car.show_contact %} checked {% endif %}>
+                Show Contact
+            </label>
+            <label>
+                <input type="checkbox" name="mechanic_full_access"{% if car.mechanic_full_access %} checked {% endif %}>
+                Allow mechanics to see full service details
+            </label>
+            <button type="submit">Submit</button>
+        </form>
+    {% endblock %}
